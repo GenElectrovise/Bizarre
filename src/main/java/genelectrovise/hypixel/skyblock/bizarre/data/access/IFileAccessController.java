@@ -1,6 +1,7 @@
 package genelectrovise.hypixel.skyblock.bizarre.data.access;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import javax.annotation.Nonnull;

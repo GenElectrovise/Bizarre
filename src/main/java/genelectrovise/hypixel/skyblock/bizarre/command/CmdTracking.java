@@ -13,7 +13,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "tracking", description = "Manages tracked items")
-public class CmdTrack implements Runnable {
+public class CmdTracking implements Runnable {
 
 	@Option(names = { "-item" }, required = true)
 	private String item;
@@ -104,7 +104,7 @@ public class CmdTrack implements Runnable {
 	}
 
 	public void displayTracking(TrackingFile file) {
-		StringBuilder builder = new StringBuilder("Now tracking: [");
+		StringBuilder builder = new StringBuilder("Now tracking: [ ");
 		file.getTracking().forEach((str) -> {
 			builder.append(str);
 			builder.append(" ");
