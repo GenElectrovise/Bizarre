@@ -1,9 +1,0 @@
-genelectrovise\hypixel\skyblock\bizarre\command\CmdBizarre.class
-genelectrovise\hypixel\skyblock\bizarre\data\access\IFileAccessController.class
-genelectrovise\hypixel\skyblock\bizarre\command\CmdMargins.class
-genelectrovise\hypixel\skyblock\bizarre\Bizarre.class
-genelectrovise\hypixel\skyblock\bizarre\data\DatabaseManager.class
-genelectrovise\hypixel\skyblock\bizarre\data\access\FileAccessController.class
-genelectrovise\hypixel\skyblock\bizarre\data\Margin.class
-genelectrovise\hypixel\skyblock\bizarre\data\file\TrackingFile.class
-genelectrovise\hypixel\skyblock\bizarre\command\CmdTrack.class
