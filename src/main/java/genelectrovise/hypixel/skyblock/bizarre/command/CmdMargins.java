@@ -1,17 +1,23 @@
 package genelectrovise.hypixel.skyblock.bizarre.command;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.sql.Date;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.HashBiMap;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.data.Margin;
 import net.hypixel.api.reply.skyblock.BazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product.Status;
@@ -36,6 +42,8 @@ public class CmdMargins implements Runnable {
 			reportBuilder.append("PROFIT MARGIN REPORT - " + LocalDateTime.now().toString());
 			reportBuilder.append("\n");
 
+			Map<Double, Margin> margins = HashBiMap.create();
+
 			products.forEach((key, product) -> {
 				Status quickStatus = product.getQuickStatus();
 				double buyPrice = quickStatus.getBuyPrice();
@@ -43,14 +51,29 @@ public class CmdMargins implements Runnable {
 
 				double margin = (sellPrice - buyPrice) / sellPrice;
 
+				margins.put(new Double(margin), new Margin(key, buyPrice, sellPrice, margin));
+			});
+
+			// Sort
+			Set<Double> doubles = margins.keySet();
+			List<Double> sortedDoubles = doubles.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+
+			for (Double double1 : sortedDoubles) {
+
+				Margin marginFrom = margins.get(double1);
+
 				StringBuilder lineBuilder = new StringBuilder();
-				lineBuilder.append(key + " -");
-				lineBuilder.append(" margin=" + margin);
-				lineBuilder.append(" buy=" + buyPrice);
-				lineBuilder.append(" sell=" + sellPrice);
+				lineBuilder.append(makeStringUpTo(marginFrom.getName(), 32, " ") + " -");
+				lineBuilder.append(makeStringUpTo(" margin= " + marginFrom.getMargin(), 32, " "));
+				lineBuilder.append(makeStringUpTo(" buy= " + marginFrom.getBuy(), 32, " "));
+				lineBuilder.append(makeStringUpTo(" sell= " + marginFrom.getSell(), 32, " "));
 
 				reportBuilder.append("\n" + lineBuilder.toString());
-			});
+			}
+
+			// Produce report
+
+			System.out.println("Report produced... Printing to file system...");
 
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss");
 			LocalDateTime now = LocalDateTime.now();
@@ -58,11 +81,17 @@ public class CmdMargins implements Runnable {
 
 			String reportName = "margins-" + formatted + ".txt";
 
-			FileWriter writer = new FileWriter(new File(Bizarre.DATABASE_MANAGER.reportsDirectory().getAbsolutePath() + "\\" + reportName));
+			File destinationFile = new File(Bizarre.DATABASE_MANAGER.reportsDirectory().getAbsolutePath() + "\\" + reportName);
+			FileWriter writer = new FileWriter(destinationFile);
 
 			writer.write(reportBuilder.toString());
 			writer.flush();
 			writer.close();
+
+			System.out.println("Printed to destination file: " + destinationFile.getAbsolutePath());
+			System.out.println("Opening in default system editor.");
+
+			Desktop.getDesktop().open(destinationFile);
 
 		} catch (InterruptedException in) {
 			in.printStackTrace();
@@ -71,5 +100,14 @@ public class CmdMargins implements Runnable {
 		} catch (IOException io) {
 			io.printStackTrace();
 		}
+	}
+
+	private static String makeStringUpTo(String input, int charsTotal, String makeUpWith) {
+		int length = input.length();
+		int requiredMore = charsTotal - length;
+		for (int i = 0; i < requiredMore; i++) {
+			input = input + makeUpWith;
+		}
+		return input;
 	}
 }

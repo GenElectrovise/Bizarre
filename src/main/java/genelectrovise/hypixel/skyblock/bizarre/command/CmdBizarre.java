@@ -7,7 +7,7 @@ import picocli.CommandLine.Command;
 public class CmdBizarre implements Runnable {
 
 	public static void main(String[] args) {
-		new CommandLine(new CmdBizarre()).execute("margins");
+		new CommandLine(new CmdBizarre()).execute(args);
 	}
 
 	public void run() {

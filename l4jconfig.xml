@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>console</headerType>
+  <jar>C:\Users\adam_\OneDrive\Desktop\Java\General Workspace\bizarre\target\bizarre-1.0.0.jar</jar>
+  <outfile>C:\Users\adam_\OneDrive\Desktop\Java\General Workspace\bizarre\target\bizarre-1.0.0.exe</outfile>
+  <errTitle>There seems to be an error with your Java installation...</errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>https://github.com/GenElectrovise/Bizarre/issues</supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Users\adam_\OneDrive\Desktop\Minecraft\Modding\Forge\MagiksMostEvile\src\main\resources\assets\magiksmostevile\textures\items\material\amethyst.png</icon>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8.0_121</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+    <initialHeapSize>256</initialHeapSize>
+    <maxHeapSize>256</maxHeapSize>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.0.0.0</fileVersion>
+    <txtFileVersion>1.0.0</txtFileVersion>
+    <fileDescription>Bizarre - An unofficial Hypixel Skyblock Bizaar querier! For all your monetary statistical needs!</fileDescription>
+    <copyright>GenElectrovise</copyright>
+    <productVersion>1.0.0.0</productVersion>
+    <txtProductVersion>1.0.0</txtProductVersion>
+    <productName>Bizarre</productName>
+    <companyName>GenElectrovise</companyName>
+    <internalName>bizarre</internalName>
+    <originalFilename>bizarre-1.0.0.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>ENGLISH_UK</language>
+  </versionInfo>
+  <messages>
+    <startupErr>An error occurred while starting Bizarre!</startupErr>
+    <bundledJreErr>This application requires a Java Runtime Environment.</bundledJreErr>
+    <jreVersionErr>There is an error with the version of your Java Runtime Environment.</jreVersionErr>
+    <launcherErr>Launcher error: The registry refers to a nonexistent Java Runtime Environment installation or the runtime is corrupted.</launcherErr>
+    <instanceAlreadyExistsMsg>An instance of Bizarre is already running.</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>
