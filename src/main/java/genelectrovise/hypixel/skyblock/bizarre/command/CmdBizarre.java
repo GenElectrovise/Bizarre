@@ -29,8 +29,8 @@ public class CmdBizarre implements Runnable {
 		System.out.println(" = / ----------- \\ = ");
 	}
 
-	@Command(name = "bizarrehome", description = "Opens the home directory of the bizarre application (where its data is stored)")
-	public void bizarreHome() {
+	@Command(name = "homedir", description = "Opens the home directory of the bizarre application (where its data is stored)")
+	public void homeDir() {
 		IFileAccessController.withinOpenAndClose(Bizarre.DATABASE_MANAGER.get("roaming"), (controller, file) -> {
 			try {
 
