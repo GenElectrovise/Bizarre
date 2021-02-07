@@ -17,8 +17,9 @@ public class CmdBizarre implements Runnable {
 		System.out.println("An unofficial Bazaar analytics tool for Hypixel Skyblock.");
 		System.out.println("Open source on GitHub: https://github.com/GenElectrovise/Bizarre");
 		System.out.println("Licensed under GNU GPL-3.0. A copy of the license is packaged with this program, and can be read on the aforementioned GitHub repository, or on https://www.gnu.org/licenses/gpl-3.0.en.html");
-		System.out.println("Run this executable with the subcommand 'help' for help with commands.");
-		System.out.println(" = </\\> = ");
+		System.out.println("Run this executable with the subcommand (argument) 'help' for help with commands.");
+		System.out.println("View the aforementioned GitHub repository for full documentation.");
+		System.out.println(" = / ----------- \\ = ");
 	}
 
 }
