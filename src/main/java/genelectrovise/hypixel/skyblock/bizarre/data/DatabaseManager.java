@@ -85,6 +85,11 @@ public class DatabaseManager {
 		return validateFile(databaseDirectory().getAbsolutePath() + "\\networks.json", "{\"networks\":{}}");
 	}
 
+	/**
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public File validateDirectory(String path) {
 		File file = new File(path);
 		file.mkdirs();
@@ -92,6 +97,12 @@ public class DatabaseManager {
 		return file;
 	}
 
+	/**
+	 * 
+	 * @param path
+	 * @param defaultContents
+	 * @return
+	 */
 	public File validateFile(String path, String defaultContents) {
 		File file = new File(path);
 		if (!file.exists()) {
