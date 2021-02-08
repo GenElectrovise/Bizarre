@@ -50,10 +50,7 @@ public class DatabaseManager {
 	 * @return
 	 */
 	public File databaseDirectory() {
-		File roaming = roamingDirectory();
-		File database = new File(roaming.getAbsolutePath() + "\\database");
-		database.mkdirs();
-		return database;
+		return validateDirectory(roamingDirectory().getAbsolutePath() + "\\database");
 	}
 
 	/**
@@ -61,10 +58,7 @@ public class DatabaseManager {
 	 * @return
 	 */
 	public File reportsDirectory() {
-		File roaming = roamingDirectory();
-		File reports = new File(roaming.getAbsolutePath() + "\\reports");
-		reports.mkdirs();
-		return reports;
+		return validateDirectory(roamingDirectory().getAbsolutePath() + "\\reports");
 	}
 
 	/**
@@ -72,21 +66,7 @@ public class DatabaseManager {
 	 * @return
 	 */
 	public File trackingJson() {
-		File json = new File(databaseDirectory().getAbsolutePath() + "\\tracking.json");
-		if (!json.exists()) {
-
-			try {
-
-				FileWriter writer = new FileWriter(json);
-				writer.write("{\"tracking\":[]}");
-				writer.flush();
-				writer.close();
-
-			} catch (IOException io) {
-				io.printStackTrace();
-			}
-		}
-		return json;
+		return validateFile(databaseDirectory().getAbsolutePath() + "\\tracking.json", "{\"tracking\":[]}");
 	}
 
 	/**
@@ -94,21 +74,7 @@ public class DatabaseManager {
 	 * @return
 	 */
 	private File configJson() {
-		File json = new File(roamingDirectory().getAbsolutePath() + "\\config.json");
-		if (!json.exists()) {
-
-			try {
-
-				FileWriter writer = new FileWriter(json);
-				writer.write("{\"apikey\":\"NONE\"}");
-				writer.flush();
-				writer.close();
-
-			} catch (IOException io) {
-				io.printStackTrace();
-			}
-		}
-		return json;
+		return validateFile(roamingDirectory().getAbsolutePath() + "\\config.json", "{\"apikey\":\"NONE\"}");
 	}
 
 	/**
@@ -116,13 +82,26 @@ public class DatabaseManager {
 	 * @return
 	 */
 	private File networksJson() {
-		File json = new File(databaseDirectory().getAbsolutePath() + "\\networks.json");
-		if (!json.exists()) {
+		return validateFile(databaseDirectory().getAbsolutePath() + "\\networks.json", "{\"networks\":{}}");
+	}
+
+	public File validateDirectory(String path) {
+		File file = new File(path);
+		file.mkdirs();
+		System.out.println("Validated managed directory " + path);
+		return file;
+	}
+
+	public File validateFile(String path, String defaultContents) {
+		File file = new File(path);
+		if (!file.exists()) {
+
+			System.out.println("File " + path + " does not exist! Will attempt to create with default contents " + defaultContents);
 
 			try {
 
-				FileWriter writer = new FileWriter(json);
-				writer.write("{\"networks\":{}}");
+				FileWriter writer = new FileWriter(file);
+				writer.write(defaultContents);
 				writer.flush();
 				writer.close();
 
@@ -130,6 +109,9 @@ public class DatabaseManager {
 				io.printStackTrace();
 			}
 		}
-		return json;
+
+		System.out.println("Validated managed file " + path);
+
+		return file;
 	}
 }
