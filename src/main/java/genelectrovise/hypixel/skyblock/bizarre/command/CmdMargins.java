@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashBiMap;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
-import genelectrovise.hypixel.skyblock.bizarre.data.Margin;
+import genelectrovise.hypixel.skyblock.bizarre.data.BasicProfitabilityScore;
 import net.hypixel.api.reply.skyblock.BazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product.Status;
@@ -25,11 +24,11 @@ import picocli.CommandLine.Command;
 
 @Command(name = "margins", description = "Creates a report of the profit margins of all Bazaar items.")
 public class CmdMargins implements Runnable {
+
 	@Override
 	public void run() {
 
 		try {
-
 			System.out.println("Fetching latest bazaar offers... This may take a moment...");
 			CompletableFuture<BazaarReply> futureReply = Bizarre.HYPIXEL_API.getBazaar();
 			System.out.println("Waiting for response...");
@@ -37,41 +36,45 @@ public class CmdMargins implements Runnable {
 			System.out.println("Recieved response... Will now produce a report!");
 
 			Map<String, Product> products = reply.getProducts();
+			HashBiMap<String, BasicProfitabilityScore> margins = HashBiMap.create();
 
+			products.forEach((key, product) -> {
+				Status quickStatus = product.getQuickStatus();
+
+				// Raw data
+				double buyPriceAverage = quickStatus.getBuyPrice();
+				double buyInLastWeek = quickStatus.getBuyMovingWeek();
+				double buyOrders = quickStatus.getBuyOrders();
+				double buyVolume = quickStatus.getBuyVolume();
+				double sellPriceAverage = quickStatus.getSellPrice();
+				double sellInLastWeek = quickStatus.getSellMovingWeek();
+				double sellOrders = quickStatus.getSellOrders();
+				double sellVolume = quickStatus.getSellVolume();
+
+				// Metrics
+				double profitMargin = (sellPriceAverage - buyPriceAverage); // If you buy X, then sell X then what is your profit
+				double profitMarginPercentage = ((sellPriceAverage - buyPriceAverage) / sellPriceAverage) * 100; // Percentage of profitMargin
+				double moneyTransferred = buyInLastWeek * sellPriceAverage; // The amount of money payed for X in the last week.
+				double priceGapActivity = (sellPriceAverage - buyPriceAverage) * moneyTransferred;
+
+				margins.put(key, new BasicProfitabilityScore(key, buyPriceAverage, sellPriceAverage, profitMarginPercentage, (int) moneyTransferred, priceGapActivity));
+			});
+
+			// Sort
+			// List<Double> sortedDoubles =
+			// doubles.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+
+			// Build report
 			StringBuilder reportBuilder = new StringBuilder();
 			reportBuilder.append("PROFIT MARGIN REPORT - " + LocalDateTime.now().toString());
 			reportBuilder.append("\n");
 
-			Map<Double, Margin> margins = HashBiMap.create();
-
-			products.forEach((key, product) -> {
-				Status quickStatus = product.getQuickStatus();
-				double buyPrice = quickStatus.getBuyPrice();
-				double sellPrice = quickStatus.getSellPrice();
-
-				double margin = (sellPrice - buyPrice) / sellPrice;
-
-				margins.put(new Double(margin), new Margin(key, buyPrice, sellPrice, margin));
+			sortScores(margins).forEach((key, score) -> {
+				reportBuilder.append(score.toString());
+				reportBuilder.append("\n");
 			});
 
-			// Sort
-			Set<Double> doubles = margins.keySet();
-			List<Double> sortedDoubles = doubles.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
-
-			for (Double double1 : sortedDoubles) {
-
-				Margin marginFrom = margins.get(double1);
-
-				StringBuilder lineBuilder = new StringBuilder();
-				lineBuilder.append(makeStringUpTo(marginFrom.getName(), 32, " ") + " -");
-				lineBuilder.append(makeStringUpTo(" margin= " + marginFrom.getMargin(), 32, " "));
-				lineBuilder.append(makeStringUpTo(" buy= " + marginFrom.getBuy(), 32, " "));
-				lineBuilder.append(makeStringUpTo(" sell= " + marginFrom.getSell(), 32, " "));
-
-				reportBuilder.append("\n" + lineBuilder.toString());
-			}
-
-			// Produce report
+			// Print report
 
 			System.out.println("Report produced... Printing to file system...");
 
@@ -102,12 +105,19 @@ public class CmdMargins implements Runnable {
 		}
 	}
 
-	private static String makeStringUpTo(String input, int charsTotal, String makeUpWith) {
-		int length = input.length();
-		int requiredMore = charsTotal - length;
-		for (int i = 0; i < requiredMore; i++) {
-			input = input + makeUpWith;
-		}
-		return input;
+	private Map<String, BasicProfitabilityScore> sortScores(HashBiMap<String, BasicProfitabilityScore> margins) {
+		HashBiMap<Integer, BasicProfitabilityScore> scores = HashBiMap.create();
+		margins.forEach((key, score) -> {
+			scores.put(score.getActivity(), score);
+		});
+
+		List<Integer> activities = scores.keySet().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+
+		HashBiMap<String, BasicProfitabilityScore> temp = HashBiMap.create();
+		activities.forEach((inte) -> {
+			temp.put(scores.get(inte).getName(), margins.get(scores.get(inte).getName()));
+		});
+
+		return temp;
 	}
 }

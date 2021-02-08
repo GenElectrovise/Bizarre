@@ -8,13 +8,14 @@ import genelectrovise.hypixel.skyblock.bizarre.data.access.IFileAccessController
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-@Command(name = "bizarre", description = "Entry point for the Bizarre CLI", subcommands = { CmdTracking.class, CmdMargins.class })
+@Command(name = "bizarre", description = "Entry point for the Bizarre CLI", subcommands = { CmdTracking.class, CmdMargins.class, CmdNetwork.class })
 public class CmdBizarre implements Runnable {
 
 	public static void main(String[] args) {
 		new CommandLine(new CmdBizarre()).execute(args);
 	}
 
+	@Override
 	public void run() {
 		System.out.println(" = \\ INFORMATION / = ");
 		System.out.println("Bizarre, by GenElectrovise");

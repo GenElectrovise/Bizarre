@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 
 import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseManager;
 import genelectrovise.hypixel.skyblock.bizarre.data.access.IFileAccessController;
+import genelectrovise.hypixel.skyblock.bizarre.neuroph.NetworkManager;
 import net.hypixel.api.HypixelAPI;
 
 public class Bizarre {
@@ -15,6 +16,7 @@ public class Bizarre {
 	public static final DatabaseManager DATABASE_MANAGER = new DatabaseManager();
 	public static UUID apiKey = null;
 	public static final HypixelAPI HYPIXEL_API = getApi();
+	public static final NetworkManager NETWORK_MANAGER = getNetworkManager();
 
 	private static HypixelAPI getApi() {
 
@@ -41,5 +43,9 @@ public class Bizarre {
 		});
 
 		return new HypixelAPI(apiKey);
+	}
+
+	private static NetworkManager getNetworkManager() {
+		return null;
 	}
 }
