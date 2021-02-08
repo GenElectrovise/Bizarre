@@ -57,7 +57,7 @@ public class CmdMargins implements Runnable {
 				double moneyTransferred = buyInLastWeek * sellPriceAverage; // The amount of money payed for X in the last week.
 				double priceGapActivity = (sellPriceAverage - buyPriceAverage) * moneyTransferred;
 
-				margins.put(key, new BasicProfitabilityScore(key, buyPriceAverage, sellPriceAverage, profitMarginPercentage, (int) moneyTransferred, priceGapActivity));
+				margins.put(key, new BasicProfitabilityScore(key, buyPriceAverage, buyInLastWeek, buyOrders, buyVolume, sellPriceAverage, sellInLastWeek, sellOrders, sellVolume));
 			});
 
 			// Sort
@@ -106,18 +106,19 @@ public class CmdMargins implements Runnable {
 	}
 
 	private Map<String, BasicProfitabilityScore> sortScores(HashBiMap<String, BasicProfitabilityScore> margins) {
-		HashBiMap<Integer, BasicProfitabilityScore> scores = HashBiMap.create();
-		margins.forEach((key, score) -> {
-			scores.put(score.getActivity(), score);
-		});
+		/*
+		 * HashBiMap<Integer, BasicProfitabilityScore> scores = HashBiMap.create();
+		 * margins.forEach((key, score) -> { scores.put(score.getActivity(), score); });
+		 * 
+		 * List<Integer> activities =
+		 * scores.keySet().stream().sorted(Comparator.naturalOrder()).collect(Collectors
+		 * .toList());
+		 * 
+		 * HashBiMap<String, BasicProfitabilityScore> temp = HashBiMap.create();
+		 * activities.forEach((inte) -> { temp.put(scores.get(inte).getName(),
+		 * margins.get(scores.get(inte).getName())); });
+		 */
 
-		List<Integer> activities = scores.keySet().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-
-		HashBiMap<String, BasicProfitabilityScore> temp = HashBiMap.create();
-		activities.forEach((inte) -> {
-			temp.put(scores.get(inte).getName(), margins.get(scores.get(inte).getName()));
-		});
-
-		return temp;
+		return margins;
 	}
 }

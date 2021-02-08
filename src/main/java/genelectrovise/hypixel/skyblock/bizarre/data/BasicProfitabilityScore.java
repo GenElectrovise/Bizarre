@@ -3,43 +3,19 @@ package genelectrovise.hypixel.skyblock.bizarre.data;
 public class BasicProfitabilityScore {
 
 	private String name;
-	private double buy;
-	private double sell;
-	private double margin;
-	private int activity;
-	private double priceGapActivity;
+	private double buyPriceAverage, buyInLastWeek, buyOrders, buyVolume, sellPriceAverage, sellInLastWeek, sellOrders, sellVolume;
 
-	public BasicProfitabilityScore(String name, double buy, double sell, double margin, int moneyTransferred, double priceGapActivity) {
+	public BasicProfitabilityScore(String name, double buyPriceAverage, double buyInLastWeek, double buyOrders, double buyVolume, double sellPriceAverage, double sellInLastWeek, double sellOrders,
+			double sellVolume) {
 		this.name = name;
-		this.buy = buy;
-		this.sell = sell;
-		this.margin = margin;
-		this.activity = moneyTransferred;
-		this.priceGapActivity = priceGapActivity;
-	}
-
-	public double getBuy() {
-		return buy;
-	}
-
-	public double getMargin() {
-		return margin;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public double getSell() {
-		return sell;
-	}
-
-	public int getActivity() {
-		return activity;
-	}
-	
-	public double getPriceGapActivity() {
-		return priceGapActivity;
+		this.buyPriceAverage = buyPriceAverage;
+		this.buyInLastWeek = buyInLastWeek;
+		this.buyOrders = buyOrders;
+		this.buyVolume = buyVolume;
+		this.sellPriceAverage = sellPriceAverage;
+		this.sellInLastWeek = sellInLastWeek;
+		this.sellOrders = sellOrders;
+		this.sellVolume = sellVolume;
 	}
 
 	private static String makeStringUpTo(String input, int charsTotal, String makeUpWith) {
@@ -55,13 +31,52 @@ public class BasicProfitabilityScore {
 	public String toString() {
 
 		StringBuilder lineBuilder = new StringBuilder();
-		lineBuilder.append(makeStringUpTo(getName(), 32, " ") + " -");
-		lineBuilder.append(makeStringUpTo(" margin= " + getMargin(), 32, " "));
-		lineBuilder.append(makeStringUpTo(" buy= " + getBuy(), 32, " "));
-		lineBuilder.append(makeStringUpTo(" sell= " + getSell(), 32, " "));
-		lineBuilder.append(makeStringUpTo(" activity= " + getActivity(), 32, " "));
-		lineBuilder.append(makeStringUpTo(" pricegap*activity= " + getPriceGapActivity(), 32, " "));
-		
+		lineBuilder.append(makeStringUpTo(name, 32, " ") + " -");
+		lineBuilder.append(makeStringUpTo(" buyPriceAverage= " + buyPriceAverage, 48, " "));
+		lineBuilder.append(makeStringUpTo(" buyInLastWeek= " + buyInLastWeek, 32, " "));
+		lineBuilder.append(makeStringUpTo(" buyOrders= " + buyOrders, 32, " "));
+		lineBuilder.append(makeStringUpTo(" buyVolume= " + buyVolume, 32, " "));
+		lineBuilder.append(makeStringUpTo(" sellPriceAverage= " + sellPriceAverage, 48, " "));
+		lineBuilder.append(makeStringUpTo(" sellInLastWeek= " + sellInLastWeek, 32, " "));
+		lineBuilder.append(makeStringUpTo(" sellOrders= " + sellOrders, 32, " "));
+		lineBuilder.append(makeStringUpTo(" sellVolume= " + getSellVolume(), 32, " "));
+
 		return lineBuilder.toString();
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public double getBuyPriceAverage() {
+		return buyPriceAverage;
+	}
+
+	public double getBuyInLastWeek() {
+		return buyInLastWeek;
+	}
+
+	public double getBuyOrders() {
+		return buyOrders;
+	}
+
+	public double getBuyVolume() {
+		return buyVolume;
+	}
+
+	public double getSellPriceAverage() {
+		return sellPriceAverage;
+	}
+
+	public double getSellInLastWeek() {
+		return sellInLastWeek;
+	}
+
+	public double getSellOrders() {
+		return sellOrders;
+	}
+
+	public double getSellVolume() {
+		return sellVolume;
 	}
 }
