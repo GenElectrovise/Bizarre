@@ -4,12 +4,28 @@ package genelectrovise.hypixel.skyblock.bizarre.data;
  * Example input: database/tracking.json
  *
  */
-@FunctionalInterface
 public interface IFileDefinition {
 
 	String path();
-	
-	public static IFileDefinition of(String path) {
-		return () -> path;
+
+	FileType type();
+
+	public static IFileDefinition of(String path, FileType type) {
+		return new IFileDefinition() {
+
+			@Override
+			public String path() {
+				return path;
+			}
+
+			@Override
+			public FileType type() {
+				return type;
+			}
+		};
+	}
+
+	public enum FileType {
+		FILE, DIRECTORY;
 	}
 }

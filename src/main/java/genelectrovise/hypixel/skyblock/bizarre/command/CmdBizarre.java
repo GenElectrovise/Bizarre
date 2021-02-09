@@ -1,10 +1,6 @@
 package genelectrovise.hypixel.skyblock.bizarre.command;
 
-import java.awt.Desktop;
-import java.io.IOException;
-
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
-import genelectrovise.hypixel.skyblock.bizarre.data.access.IFileAccessController;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -32,15 +28,7 @@ public class CmdBizarre implements Runnable {
 
 	@Command(name = "homedir", description = "Opens the home directory of the bizarre application (where its data is stored)")
 	public void homeDir() {
-		IFileAccessController.withinOpenAndClose(Bizarre.DATABASE_MANAGER.get("roaming"), (controller, file) -> {
-			try {
-
-				Desktop.getDesktop().open(file);
-
-			} catch (IOException io) {
-				io.printStackTrace();
-			}
-		});
+		Bizarre.DATABASE_AGENT.openRoamingDirectory();
 	}
 
 }

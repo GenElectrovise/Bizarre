@@ -1,22 +1,19 @@
 package genelectrovise.hypixel.skyblock.bizarre.command;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBiMap;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import genelectrovise.hypixel.skyblock.bizarre.data.BasicProfitabilityScore;
+import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.IFileDefinition;
+import genelectrovise.hypixel.skyblock.bizarre.data.IFileDefinition.FileType;
 import net.hypixel.api.reply.skyblock.BazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import net.hypixel.api.reply.skyblock.BazaarReply.Product.Status;
@@ -25,6 +22,7 @@ import picocli.CommandLine.Command;
 @Command(name = "margins", description = "Creates a report of the profit margins of all Bazaar items.")
 public class CmdMargins implements Runnable {
 
+	@SuppressWarnings("unused")
 	@Override
 	public void run() {
 
@@ -81,20 +79,15 @@ public class CmdMargins implements Runnable {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss");
 			LocalDateTime now = LocalDateTime.now();
 			String formatted = now.format(formatter);
-
 			String reportName = "margins-" + formatted + ".txt";
 
-			File destinationFile = new File(Bizarre.DATABASE_MANAGER.reportsDirectory().getAbsolutePath() + "\\" + reportName);
-			FileWriter writer = new FileWriter(destinationFile);
+			IFileDefinition definition = reportFileDefinition(reportName);
+			Bizarre.DATABASE_AGENT.write(definition, reportBuilder.toString());
 
-			writer.write(reportBuilder.toString());
-			writer.flush();
-			writer.close();
-
-			System.out.println("Printed to destination file: " + destinationFile.getAbsolutePath());
+			System.out.println("Printed to destination file: " + definition.path());
 			System.out.println("Opening in default system editor.");
 
-			Desktop.getDesktop().open(destinationFile);
+			Bizarre.DATABASE_AGENT.openInSystemEditor(definition);
 
 		} catch (InterruptedException in) {
 			in.printStackTrace();
@@ -103,6 +96,10 @@ public class CmdMargins implements Runnable {
 		} catch (IOException io) {
 			io.printStackTrace();
 		}
+	}
+
+	private IFileDefinition reportFileDefinition(String reportName) {
+		return IFileDefinition.of(DatabaseAgent.REPORTS.path() + "/" + reportName, FileType.FILE);
 	}
 
 	private Map<String, BasicProfitabilityScore> sortScores(HashBiMap<String, BasicProfitabilityScore> margins) {

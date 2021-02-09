@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.google.gson.JsonObject;
-
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
-import genelectrovise.hypixel.skyblock.bizarre.data.access.IFileAccessController;
+import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseAgent;
 import genelectrovise.hypixel.skyblock.bizarre.data.file.TrackingFile;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -23,23 +21,23 @@ public class CmdTracking implements Runnable {
 	 */
 	@Command(name = "add", description = "Adds an item to the tracking list")
 	public void cmdAdd() {
-
-		IFileAccessController.withinOpenAndClose(Bizarre.DATABASE_MANAGER.get("tracking"), (controller, file) -> {
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, controller.read());
-
+		try {
 			System.out.println("Adding: " + item);
 
+			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
 			boolean added = false;
 			if (trackingFile.getTracking().contains(item)) {
-				
+
 			} else {
 				added = trackingFile.getTracking().add(item);
-				writeTrackingFileToFileSystem(trackingFile, file);
+				Bizarre.DATABASE_AGENT.write(DatabaseAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
 			}
-
 			System.out.println("Added: " + added);
 			displayTracking(trackingFile);
-		});
+
+		} catch (IOException io) {
+			io.printStackTrace();
+		}
 	}
 
 	/**
@@ -48,19 +46,20 @@ public class CmdTracking implements Runnable {
 	@Command(name = "remove", description = "Removes an item from the tracking list")
 	public void cmdRemove() {
 
-		IFileAccessController.withinOpenAndClose(Bizarre.DATABASE_MANAGER.get("tracking"), (controller, file) -> {
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, controller.read());
-
+		try {
 			System.out.println("Removing: " + item);
 
+			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
 			boolean contained = trackingFile.getTracking().contains(item);
 			boolean removed = trackingFile.getTracking().remove(item);
-			writeTrackingFileToFileSystem(trackingFile, file);
+			Bizarre.DATABASE_AGENT.write(DatabaseAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
 
 			System.out.println("Previously contained: " + contained + "; Removed: " + removed);
 			displayTracking(trackingFile);
+		} catch (IOException io) {
+			io.printStackTrace();
+		}
 
-		});
 	}
 
 	/**
@@ -69,11 +68,14 @@ public class CmdTracking implements Runnable {
 	@Override
 	public void run() {
 
-		IFileAccessController.withinOpenAndClose(Bizarre.DATABASE_MANAGER.get("tracking"), (controller, file) -> {
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, controller.read());
+		TrackingFile trackingFile;
+		try {
+			trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
 
 			displayTracking(trackingFile);
-		});
+		} catch (IOException io) {
+			io.printStackTrace();
+		}
 	}
 
 	/**
@@ -97,10 +99,6 @@ public class CmdTracking implements Runnable {
 			io.printStackTrace();
 		}
 
-	}
-
-	public void closeTrackingFile() {
-		Bizarre.DATABASE_MANAGER.get("tracking").close();
 	}
 
 	public void displayTracking(TrackingFile file) {
