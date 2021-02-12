@@ -28,7 +28,7 @@ public class CmdBizarre implements Runnable {
 
 	@Command(name = "homedir", description = "Opens the home directory of the bizarre application (where its data is stored)")
 	public void homeDir() {
-		Bizarre.DATABASE_AGENT.openRoamingDirectory();
+		Bizarre.FILE_SYSTEM_AGENT.openRoamingDirectory();
 	}
 
 }

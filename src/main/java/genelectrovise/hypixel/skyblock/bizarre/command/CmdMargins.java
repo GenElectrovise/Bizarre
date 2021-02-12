@@ -11,7 +11,7 @@ import com.google.common.collect.HashBiMap;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import genelectrovise.hypixel.skyblock.bizarre.data.BasicProfitabilityScore;
-import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
 import genelectrovise.hypixel.skyblock.bizarre.data.IFileDefinition;
 import genelectrovise.hypixel.skyblock.bizarre.data.IFileDefinition.FileType;
 import net.hypixel.api.reply.skyblock.BazaarReply;
@@ -82,12 +82,12 @@ public class CmdMargins implements Runnable {
 			String reportName = "margins-" + formatted + ".txt";
 
 			IFileDefinition definition = reportFileDefinition(reportName);
-			Bizarre.DATABASE_AGENT.write(definition, reportBuilder.toString());
+			Bizarre.FILE_SYSTEM_AGENT.write(definition, reportBuilder.toString());
 
 			System.out.println("Printed to destination file: " + definition.path());
 			System.out.println("Opening in default system editor.");
 
-			Bizarre.DATABASE_AGENT.openInSystemEditor(definition);
+			Bizarre.FILE_SYSTEM_AGENT.openInSystemEditor(definition);
 
 		} catch (InterruptedException in) {
 			in.printStackTrace();
@@ -99,7 +99,7 @@ public class CmdMargins implements Runnable {
 	}
 
 	private IFileDefinition reportFileDefinition(String reportName) {
-		return IFileDefinition.of(DatabaseAgent.REPORTS.path() + "/" + reportName, FileType.FILE);
+		return IFileDefinition.of(FileSystemAgent.REPORTS.path() + "/" + reportName, FileType.FILE);
 	}
 
 	private Map<String, BasicProfitabilityScore> sortScores(HashBiMap<String, BasicProfitabilityScore> margins) {

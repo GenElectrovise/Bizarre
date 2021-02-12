@@ -10,14 +10,14 @@ import java.nio.CharBuffer;
 
 import genelectrovise.hypixel.skyblock.bizarre.data.IFileDefinition.FileType;
 
-public class DatabaseAgent {
+public class FileSystemAgent {
 
 	public static final IFileDefinition TRACKING = IFileDefinition.of("database/tracking.json", FileType.FILE);
 	public static final IFileDefinition CONFIG = IFileDefinition.of("config.json", FileType.FILE);
 	public static final IFileDefinition REPORTS = IFileDefinition.of("reports/", FileType.DIRECTORY);
 	public static final IFileDefinition DATABASE = IFileDefinition.of("database/", FileType.DIRECTORY);
 
-	public DatabaseAgent() {
+	public FileSystemAgent() {
 		ensureExistance(TRACKING, "{\"tracking\":[]}");
 		ensureExistance(CONFIG, "{\"apikey\":\"NONE\"}");
 		ensureExistance(REPORTS, "");

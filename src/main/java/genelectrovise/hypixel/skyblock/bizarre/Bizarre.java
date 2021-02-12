@@ -8,13 +8,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
 import genelectrovise.hypixel.skyblock.bizarre.neuroph.NetworkManager;
 import net.hypixel.api.HypixelAPI;
 
 public class Bizarre {
 	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	public static final DatabaseAgent DATABASE_AGENT = new DatabaseAgent();
+	public static final FileSystemAgent FILE_SYSTEM_AGENT = new FileSystemAgent();
 	public static UUID apiKey = null;
 	public static final HypixelAPI HYPIXEL_API = getApi();
 	public static final NetworkManager NETWORK_MANAGER = getNetworkManager();
@@ -22,7 +22,7 @@ public class Bizarre {
 	private static HypixelAPI getApi() {
 
 		try {
-			JsonObject object = GSON.fromJson(DATABASE_AGENT.read(DatabaseAgent.CONFIG), JsonObject.class);
+			JsonObject object = GSON.fromJson(FILE_SYSTEM_AGENT.read(FileSystemAgent.CONFIG), JsonObject.class);
 
 			if (!object.has("apikey")) {
 				throw new NullPointerException("The apikey of config.json must be populated! Use: \"apikey\":\"KEY_GOES_HERE\"");

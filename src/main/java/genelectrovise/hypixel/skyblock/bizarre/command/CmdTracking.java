@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
-import genelectrovise.hypixel.skyblock.bizarre.data.DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
 import genelectrovise.hypixel.skyblock.bizarre.data.file.TrackingFile;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -24,13 +24,13 @@ public class CmdTracking implements Runnable {
 		try {
 			System.out.println("Adding: " + item);
 
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
+			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
 			boolean added = false;
 			if (trackingFile.getTracking().contains(item)) {
 
 			} else {
 				added = trackingFile.getTracking().add(item);
-				Bizarre.DATABASE_AGENT.write(DatabaseAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
+				Bizarre.FILE_SYSTEM_AGENT.write(FileSystemAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
 			}
 			System.out.println("Added: " + added);
 			displayTracking(trackingFile);
@@ -49,10 +49,10 @@ public class CmdTracking implements Runnable {
 		try {
 			System.out.println("Removing: " + item);
 
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
+			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
 			boolean contained = trackingFile.getTracking().contains(item);
 			boolean removed = trackingFile.getTracking().remove(item);
-			Bizarre.DATABASE_AGENT.write(DatabaseAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
+			Bizarre.FILE_SYSTEM_AGENT.write(FileSystemAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
 
 			System.out.println("Previously contained: " + contained + "; Removed: " + removed);
 			displayTracking(trackingFile);
@@ -70,7 +70,7 @@ public class CmdTracking implements Runnable {
 
 		TrackingFile trackingFile;
 		try {
-			trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.DATABASE_AGENT.read(DatabaseAgent.TRACKING));
+			trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
 
 			displayTracking(trackingFile);
 		} catch (IOException io) {
