@@ -9,15 +9,22 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
-import genelectrovise.hypixel.skyblock.bizarre.neuroph.NetworkManager;
+import genelectrovise.hypixel.skyblock.bizarre.data.H2DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.neuroph.NeurophManager;
 import net.hypixel.api.HypixelAPI;
 
 public class Bizarre {
+
+	static {
+		Runtime.getRuntime().addShutdownHook(new ShutdownHooks());
+	}
+
 	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public static final FileSystemAgent FILE_SYSTEM_AGENT = new FileSystemAgent();
 	public static UUID apiKey = null;
 	public static final HypixelAPI HYPIXEL_API = getApi();
-	public static final NetworkManager NETWORK_MANAGER = getNetworkManager();
+	public static final NeurophManager NEUROPH_MANAGER = getNeurophManager();
+	public static final H2DatabaseAgent H2_DATABASE_AGENT = getH2DatabaseAgent();
 
 	private static HypixelAPI getApi() {
 
@@ -50,7 +57,11 @@ public class Bizarre {
 		return new HypixelAPI(apiKey);
 	}
 
-	private static NetworkManager getNetworkManager() {
+	private static NeurophManager getNeurophManager() {
 		return null;
+	}
+
+	private static H2DatabaseAgent getH2DatabaseAgent() {
+		return new H2DatabaseAgent(H2DatabaseAgent.getDefaultPath());
 	}
 }

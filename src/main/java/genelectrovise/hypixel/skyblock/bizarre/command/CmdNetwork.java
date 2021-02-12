@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.jooq.impl.DSL;
+
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import net.hypixel.api.reply.skyblock.BazaarReply;
 import picocli.CommandLine.Command;
@@ -68,9 +70,11 @@ public class CmdNetwork {
 		CompletableFuture<BazaarReply> futureReply = Bizarre.HYPIXEL_API.getBazaar();
 		System.out.println("Requested BazaarReply from Hypixel... Waiting for response.");
 		BazaarReply reply = futureReply.get();
-		
-		//sortData(reply);
-		
-		//engageNetworks();
+
+		// sortData(reply);
+
+		// storeData(sortedBizarreReply);
+
+		// engageNetworks();
 	}
 }
