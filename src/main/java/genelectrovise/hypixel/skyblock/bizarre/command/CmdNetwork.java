@@ -1,6 +1,9 @@
 package genelectrovise.hypixel.skyblock.bizarre.command;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -10,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.jooq.impl.DSL;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.data.SortedBazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -65,16 +69,38 @@ public class CmdNetwork {
 	}
 
 	private void handleRetrieval() throws InterruptedException, ExecutionException {
-		System.out.println("Handling latest network/retrieve task!" + LocalDateTime.now().toString());
+		
+		Timestamp timestamp = java.sql.Timestamp.valueOf(LocalDateTime.now());
+		
+		System.out.println("Handling latest network/retrieve task! " + LocalDateTime.now().toString());
 
 		CompletableFuture<BazaarReply> futureReply = Bizarre.HYPIXEL_API.getBazaar();
 		System.out.println("Requested BazaarReply from Hypixel... Waiting for response.");
 		BazaarReply reply = futureReply.get();
 
-		// sortData(reply);
+		System.out.println("Recieved a BazaarReply! Processing data...");
+		SortedBazaarReply sortedBazaarReply = sortData(timestamp, reply);
 
-		// storeData(sortedBizarreReply);
+		storeData(sortedBazaarReply);
 
-		// engageNetworks();
+		engageNetworks();
+	}
+
+	private SortedBazaarReply sortData(Timestamp timestamp, BazaarReply reply) {
+		
+		SortedBazaarReply sorted = new SortedBazaarReply();
+		sorted.setTimeStamp(timestamp);
+		
+		
+		
+		return null;
+	}
+
+	private void storeData(SortedBazaarReply sortedBazaarReply) {
+		return;
+	}
+
+	private void engageNetworks() {
+		return;
 	}
 }

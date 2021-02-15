@@ -1,12 +1,11 @@
 package genelectrovise.hypixel.skyblock.bizarre.command;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
-import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
-import genelectrovise.hypixel.skyblock.bizarre.data.file.TrackingFile;
+import genelectrovise.hypixel.skyblock.bizarre.sql.H2DatabaseAgent;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -23,20 +22,27 @@ public class CmdTracking implements Runnable {
 	public void cmdAdd() {
 		try {
 			System.out.println("Adding: " + item);
-
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
 			boolean added = false;
-			if (trackingFile.getTracking().contains(item)) {
+			
+			createRequired();
+			
+			// SELECT * FROM TrackedItems WHERE Name='DIAMOND'
+			ResultSet doesAlreadyExist = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
 
-			} else {
-				added = trackingFile.getTracking().add(item);
-				Bizarre.FILE_SYSTEM_AGENT.write(FileSystemAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
+			// If value in first column is null (no identically named item exists)
+			if (doesAlreadyExist.getString(1) == null) {
+
+				// INSERT INTO TrackedItems VALUES (DIAMOND);
+				@SuppressWarnings("unused")
+				ResultSet resultOfInput = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("INSERT INTO Bizarre.TrackedItems VALUES (" + item + ");");
+				added = true;
 			}
-			System.out.println("Added: " + added);
-			displayTracking(trackingFile);
 
-		} catch (IOException io) {
-			io.printStackTrace();
+			System.out.println("Added: " + added);
+			displayTracking();
+
+		} catch (SQLException sql) {
+			sql.printStackTrace();
 		}
 	}
 
@@ -45,19 +51,32 @@ public class CmdTracking implements Runnable {
 	 */
 	@Command(name = "remove", description = "Removes an item from the tracking list")
 	public void cmdRemove() {
+		System.out.println("Removing: " + item);
+
+		boolean previouslyContained = false;
+		boolean removed = false;
 
 		try {
-			System.out.println("Removing: " + item);
 
-			TrackingFile trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
-			boolean contained = trackingFile.getTracking().contains(item);
-			boolean removed = trackingFile.getTracking().remove(item);
-			Bizarre.FILE_SYSTEM_AGENT.write(FileSystemAgent.TRACKING, Bizarre.GSON.toJson(trackingFile, TrackingFile.class));
+			// SELECT * FROM TrackedItems WHERE Name='DIAMOND'
+			ResultSet doesAlreadyExist = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
 
-			System.out.println("Previously contained: " + contained + "; Removed: " + removed);
-			displayTracking(trackingFile);
-		} catch (IOException io) {
-			io.printStackTrace();
+			if (doesAlreadyExist.getString(1) == null) {
+				previouslyContained = false;
+			}
+
+			// If previously contained
+			// DELETE FROM TrackedItems WHERE Name='DIAMOND';
+			if (previouslyContained) {
+				ResultSet removing = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("DELETE FROM Bizarre.TrackedItems WHERE external_name='" + item + "';");
+				removed = true;
+			}
+
+			System.out.println("Previously contained: " + previouslyContained + "; Removed: " + removed);
+			displayTracking();
+
+		} catch (SQLException sql) {
+			sql.printStackTrace();
 		}
 
 	}
@@ -68,48 +87,43 @@ public class CmdTracking implements Runnable {
 	@Override
 	public void run() {
 
-		TrackingFile trackingFile;
 		try {
-			trackingFile = TrackingFile.fromJson(Bizarre.GSON, Bizarre.FILE_SYSTEM_AGENT.read(FileSystemAgent.TRACKING));
-
-			displayTracking(trackingFile);
-		} catch (IOException io) {
-			io.printStackTrace();
+			displayTracking();
+		} catch (SQLException sql) {
+			sql.printStackTrace();
 		}
 	}
 
-	/**
-	 * Writes the given {@link TrackingFile} to the file system.
-	 * 
-	 * @param trackingFileIn The {@link TrackingFile} to write from.
-	 * @param destination    The destination file. Obtained by an
-	 *                       {@link IFileAccessController}.
-	 */
-	public void writeTrackingFileToFileSystem(TrackingFile trackingFileIn, File destination) {
+	public void displayTracking() throws SQLException {
 
-		try {
+		// Get a set of TrackedItems
+		ResultSet results = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems");
+		ArrayList<String> resultsList = new ArrayList<String>();
 
-			String json = Bizarre.GSON.toJson(trackingFileIn, TrackingFile.class);
-			FileWriter writer = new FileWriter(destination);
-			writer.write(json);
-			writer.flush();
-			writer.close();
-
-		} catch (IOException io) {
-			io.printStackTrace();
+		// For each item in the results, print
+		while (results.next()) {
+			resultsList.add(results.getString(1));
 		}
 
-	}
-
-	public void displayTracking(TrackingFile file) {
 		StringBuilder builder = new StringBuilder("Now tracking: [ ");
-		file.getTracking().forEach((str) -> {
+		resultsList.forEach((str) -> {
 			builder.append(str);
 			builder.append(" ");
 		});
 		builder.append("]");
 
 		System.out.println(builder.toString());
+	}
+	
+	private void createRequired() {
+		try {
+
+			H2DatabaseAgent.instance().createStatement().execute("CREATE SCHEMA IF NOT EXISTS Bizarre");
+			H2DatabaseAgent.instance().createStatement().execute("CREATE TABLE IF NOT EXISTS Bizarre.TrackedItems(external_name varchar(255), internal_name varchar(255))");
+			
+		} catch (SQLException sql) {
+			sql.printStackTrace();
+		}
 	}
 
 }
