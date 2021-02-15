@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.data.Namespacer;
 import genelectrovise.hypixel.skyblock.bizarre.sql.H2DatabaseAgent;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -16,29 +17,19 @@ public class CmdTracking implements Runnable {
 	private String item;
 
 	/**
-	 * The command for adding a new tracking entry
+	 * The command for adding a new tracking entry. <br>
+	 * <code>MERGE INTO Bizarre.TrackedItems KEY (external_name) values ('internal_name', 'external_name')</code>
 	 */
 	@Command(name = "add", description = "Adds an item to the tracking list")
 	public void cmdAdd() {
 		try {
 			System.out.println("Adding: " + item);
-			boolean added = false;
-			
+
 			createRequired();
-			
-			// SELECT * FROM TrackedItems WHERE Name='DIAMOND'
-			ResultSet doesAlreadyExist = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
 
-			// If value in first column is null (no identically named item exists)
-			if (doesAlreadyExist.getString(1) == null) {
-
-				// INSERT INTO TrackedItems VALUES (DIAMOND);
-				@SuppressWarnings("unused")
-				ResultSet resultOfInput = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("INSERT INTO Bizarre.TrackedItems VALUES (" + item + ");");
-				added = true;
-			}
-
-			System.out.println("Added: " + added);
+			// IF the external_name doesn't exist, insert the given external_name into the
+			// table
+			H2DatabaseAgent.instance().createStatement().execute("MERGE INTO Bizarre.TrackedItems KEY (external_name) values ('" + Namespacer.internalise(item) + "', '" + item + "')");
 			displayTracking();
 
 		} catch (SQLException sql) {
@@ -47,32 +38,16 @@ public class CmdTracking implements Runnable {
 	}
 
 	/**
-	 * Removes a tracking entry
+	 * Removes a tracking entry. <br>
+	 * <code>DELETE FROM Bizarre.TrackedItems WHERE external_name='item'</code>
 	 */
 	@Command(name = "remove", description = "Removes an item from the tracking list")
 	public void cmdRemove() {
 		System.out.println("Removing: " + item);
 
-		boolean previouslyContained = false;
-		boolean removed = false;
-
 		try {
 
-			// SELECT * FROM TrackedItems WHERE Name='DIAMOND'
-			ResultSet doesAlreadyExist = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
-
-			if (doesAlreadyExist.getString(1) == null) {
-				previouslyContained = false;
-			}
-
-			// If previously contained
-			// DELETE FROM TrackedItems WHERE Name='DIAMOND';
-			if (previouslyContained) {
-				ResultSet removing = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("DELETE FROM Bizarre.TrackedItems WHERE external_name='" + item + "';");
-				removed = true;
-			}
-
-			System.out.println("Previously contained: " + previouslyContained + "; Removed: " + removed);
+			Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().execute("DELETE FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
 			displayTracking();
 
 		} catch (SQLException sql) {
@@ -114,13 +89,13 @@ public class CmdTracking implements Runnable {
 
 		System.out.println(builder.toString());
 	}
-	
+
 	private void createRequired() {
 		try {
 
 			H2DatabaseAgent.instance().createStatement().execute("CREATE SCHEMA IF NOT EXISTS Bizarre");
 			H2DatabaseAgent.instance().createStatement().execute("CREATE TABLE IF NOT EXISTS Bizarre.TrackedItems(external_name varchar(255), internal_name varchar(255))");
-			
+
 		} catch (SQLException sql) {
 			sql.printStackTrace();
 		}

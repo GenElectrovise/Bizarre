@@ -8,15 +8,11 @@ import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 
 /**
  * The WIP application uses an admin-enabled login of
- * <b>Username='bizarre_application', Password='bizarre_application'</b>. This
- * may be able to be configured later, but really who actually wants to hack
- * into your H2 database for Hypixel Skyblock. The worst they should be able to
- * do is bid higher than you... right? (Note to self: Research SQL injection and
- * similar)<br>
- * <br>
- * <code>DSLContext context = DSL.using(DriverManager.getConnection(url), SQLDialect.H2);</code>
- * <br>
- * <code>context.method()</code>
+ * <b>Username='bizarre_console_login',
+ * Password='extremely_secure_login_password'</b>. This may be able to be
+ * configured later, but really who actually wants to hack into your H2 database
+ * for Hypixel Skyblock. The worst they should be able to do is bid higher than
+ * you... right? (Note to self: Research SQL injection and similar)
  */
 public class H2DatabaseAgent {
 
@@ -26,8 +22,12 @@ public class H2DatabaseAgent {
 
 		try {
 
+			System.out.println("Connecting to the Bizarre H2 in-memory SQL database!");
+
 			// Get a connection to the server with no login
 			this.connection = DriverManager.getConnection(pathInUrlStyle.toString());
+
+			connection.createStatement().execute("CREATE USER IF NOT EXISTS bizarre_console_login password 'extremely_secure_login_password' admin");
 
 		} catch (SQLException sql) {
 			sql.printStackTrace();
