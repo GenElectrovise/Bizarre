@@ -79,18 +79,6 @@
 			<version>1.4.194</version>
 		</dependency>
 
-		<!-- JOOP -->
-		<dependency>
-			<groupId>org.jooq</groupId>
-			<artifactId>jooq</artifactId>
-			<version>3.14.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jooq</groupId>
-			<artifactId>jooq-meta</artifactId>
-			<version>3.14.7</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>

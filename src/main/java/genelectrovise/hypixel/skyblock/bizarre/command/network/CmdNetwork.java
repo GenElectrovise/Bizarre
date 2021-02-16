@@ -1,20 +1,23 @@
-package genelectrovise.hypixel.skyblock.bizarre.command;
+package genelectrovise.hypixel.skyblock.bizarre.command.network;
 
-import java.sql.Time;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.jooq.impl.DSL;
+import com.google.common.collect.HashBiMap;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.command.tracking.CmdTracking;
 import genelectrovise.hypixel.skyblock.bizarre.data.SortedBazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply;
+import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -69,9 +72,9 @@ public class CmdNetwork {
 	}
 
 	private void handleRetrieval() throws InterruptedException, ExecutionException {
-		
+
 		Timestamp timestamp = java.sql.Timestamp.valueOf(LocalDateTime.now());
-		
+
 		System.out.println("Handling latest network/retrieve task! " + LocalDateTime.now().toString());
 
 		CompletableFuture<BazaarReply> futureReply = Bizarre.HYPIXEL_API.getBazaar();
@@ -87,13 +90,36 @@ public class CmdNetwork {
 	}
 
 	private SortedBazaarReply sortData(Timestamp timestamp, BazaarReply reply) {
-		
+
 		SortedBazaarReply sorted = new SortedBazaarReply();
 		sorted.setTimeStamp(timestamp);
-		
-		
-		
-		return null;
+
+		try {
+			// Prepare a codematic representation of .TrackedItems
+			// <internal_name, external_name>
+			HashBiMap<String, String> names = HashBiMap.create();
+
+			// Creates Bizarre and .TrackedItems
+			CmdTracking.createRequired();
+
+			// Get the raw contents of .TrackedItems
+			ResultSet trackedItems = H2DatabaseAgent.instance().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems");
+			while (trackedItems.next()) {
+				String internal_name = trackedItems.getString(1);
+				String external_name = trackedItems.getString(2);
+				names.put(internal_name, external_name);
+			}
+
+			// Process the relevant Products (place them into the SortedBizarreReply)
+			names.forEach((internal_name, external_name) -> {
+				sorted.processProduct(internal_name, external_name, reply.getProduct(external_name));
+			});
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return sorted;
 	}
 
 	private void storeData(SortedBazaarReply sortedBazaarReply) {

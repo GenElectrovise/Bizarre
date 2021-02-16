@@ -10,7 +10,6 @@ import com.google.gson.JsonSyntaxException;
 
 import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
 import genelectrovise.hypixel.skyblock.bizarre.neuroph.NeurophManager;
-import genelectrovise.hypixel.skyblock.bizarre.sql.H2DatabaseAgent;
 import net.hypixel.api.HypixelAPI;
 
 public class Bizarre {

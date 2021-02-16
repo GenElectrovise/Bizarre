@@ -1,6 +1,9 @@
-package genelectrovise.hypixel.skyblock.bizarre.command;
+package genelectrovise.hypixel.skyblock.bizarre.command.bizarre;
 
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.command.margins.CmdMargins;
+import genelectrovise.hypixel.skyblock.bizarre.command.network.CmdNetwork;
+import genelectrovise.hypixel.skyblock.bizarre.command.tracking.CmdTracking;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

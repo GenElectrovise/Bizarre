@@ -1,12 +1,11 @@
-package genelectrovise.hypixel.skyblock.bizarre.command;
+package genelectrovise.hypixel.skyblock.bizarre.command.tracking;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
+import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
 import genelectrovise.hypixel.skyblock.bizarre.data.Namespacer;
-import genelectrovise.hypixel.skyblock.bizarre.sql.H2DatabaseAgent;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -47,7 +46,7 @@ public class CmdTracking implements Runnable {
 
 		try {
 
-			Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().execute("DELETE FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
+			H2DatabaseAgent.instance().createStatement().execute("DELETE FROM Bizarre.TrackedItems WHERE external_name='" + item + "'");
 			displayTracking();
 
 		} catch (SQLException sql) {
@@ -72,7 +71,7 @@ public class CmdTracking implements Runnable {
 	public void displayTracking() throws SQLException {
 
 		// Get a set of TrackedItems
-		ResultSet results = Bizarre.H2_DATABASE_AGENT.getConnection().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems");
+		ResultSet results = H2DatabaseAgent.instance().createStatement().executeQuery("SELECT * FROM Bizarre.TrackedItems");
 		ArrayList<String> resultsList = new ArrayList<String>();
 
 		// For each item in the results, print
@@ -90,7 +89,7 @@ public class CmdTracking implements Runnable {
 		System.out.println(builder.toString());
 	}
 
-	private void createRequired() {
+	public static void createRequired() {
 		try {
 
 			H2DatabaseAgent.instance().createStatement().execute("CREATE SCHEMA IF NOT EXISTS Bizarre");

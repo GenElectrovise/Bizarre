@@ -1,4 +1,4 @@
-package genelectrovise.hypixel.skyblock.bizarre.command;
+package genelectrovise.hypixel.skyblock.bizarre.command.margins;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

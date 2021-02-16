@@ -1,10 +1,8 @@
-package genelectrovise.hypixel.skyblock.bizarre.sql;
+package genelectrovise.hypixel.skyblock.bizarre;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 
 /**
  * The WIP application uses an admin-enabled login of
