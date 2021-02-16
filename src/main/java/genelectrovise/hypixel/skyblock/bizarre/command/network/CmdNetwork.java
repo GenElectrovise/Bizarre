@@ -17,7 +17,6 @@ import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
 import genelectrovise.hypixel.skyblock.bizarre.command.tracking.CmdTracking;
 import genelectrovise.hypixel.skyblock.bizarre.data.SortedBazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply;
-import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

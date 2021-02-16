@@ -27,6 +27,8 @@ public class CmdBizarre implements Runnable {
 		System.out.println("Run this executable with the subcommand (argument) 'help' for help with commands.");
 		System.out.println("View the aforementioned GitHub repository for full documentation.");
 		System.out.println(" = / ----------- \\ = ");
+		
+		Bizarre.successfulExecutionCompletedSoWillNowExit();
 	}
 
 	@Command(name = "homedir", description = "Opens the home directory of the bizarre application (where its data is stored)")

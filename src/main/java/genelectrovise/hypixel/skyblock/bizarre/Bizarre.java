@@ -56,6 +56,10 @@ public class Bizarre {
 		return new HypixelAPI(apiKey);
 	}
 
+	public static void successfulExecutionCompletedSoWillNowExit() {
+		System.exit(0);
+	}
+
 	private static NeurophManager getNeurophManager() {
 		return null;
 	}

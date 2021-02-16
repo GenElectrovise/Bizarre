@@ -88,6 +88,8 @@ public class CmdMargins implements Runnable {
 			System.out.println("Opening in default system editor.");
 
 			Bizarre.FILE_SYSTEM_AGENT.openInSystemEditor(definition);
+			
+			System.out.println(" >> DONE << ");
 
 		} catch (InterruptedException in) {
 			in.printStackTrace();
@@ -96,6 +98,8 @@ public class CmdMargins implements Runnable {
 		} catch (IOException io) {
 			io.printStackTrace();
 		}
+
+		Bizarre.successfulExecutionCompletedSoWillNowExit();
 	}
 
 	private IFileDefinition reportFileDefinition(String reportName) {

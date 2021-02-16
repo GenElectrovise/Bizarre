@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
 import genelectrovise.hypixel.skyblock.bizarre.data.Namespacer;
 import picocli.CommandLine.Command;
@@ -34,6 +35,9 @@ public class CmdTracking implements Runnable {
 		} catch (SQLException sql) {
 			sql.printStackTrace();
 		}
+
+		System.out.println(" >> DONE << ");
+		Bizarre.successfulExecutionCompletedSoWillNowExit();
 	}
 
 	/**
@@ -53,6 +57,8 @@ public class CmdTracking implements Runnable {
 			sql.printStackTrace();
 		}
 
+		System.out.println(" >> DONE << ");
+		Bizarre.successfulExecutionCompletedSoWillNowExit();
 	}
 
 	/**
@@ -66,6 +72,8 @@ public class CmdTracking implements Runnable {
 		} catch (SQLException sql) {
 			sql.printStackTrace();
 		}
+		
+		Bizarre.successfulExecutionCompletedSoWillNowExit();
 	}
 
 	public void displayTracking() throws SQLException {
