@@ -15,8 +15,8 @@ import com.google.common.collect.HashBiMap;
 import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
 import genelectrovise.hypixel.skyblock.bizarre.command.tracking.CmdTracking;
-import genelectrovise.hypixel.skyblock.bizarre.data.SortedBazaarReply;
 import net.hypixel.api.reply.skyblock.BazaarReply;
+import net.hypixel.api.reply.skyblock.BazaarReply.Product;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -67,7 +67,7 @@ public class CmdNetwork {
 
 		ScheduledExecutorService service = (ScheduledExecutorService) Executors.newSingleThreadScheduledExecutor();
 		service.scheduleAtFixedRate(command, initialDelay, period, unit);
-		System.out.println("Started ScheduledThreadPoolExecutor @threads=" + threads + " @fixed-rate=" + period + unit.name().toLowerCase());
+		System.out.println("Started ScheduledThreadPoolExecutor @threads_for_later=" + threads + " @fixed-rate=" + period + unit.name().toLowerCase());
 	}
 
 	private void handleRetrieval() throws InterruptedException, ExecutionException {
@@ -81,17 +81,15 @@ public class CmdNetwork {
 		BazaarReply reply = futureReply.get();
 
 		System.out.println("Recieved a BazaarReply! Processing data...");
-		SortedBazaarReply sortedBazaarReply = sortData(timestamp, reply);
 
-		storeData(sortedBazaarReply);
+		storeData(timestamp, reply);
 
-		engageNetworks();
+		Bizarre.NEUROPH_MANAGER.trainNeuralNetworks_forTrackedItems_withAllAvailableData(threads);
 	}
 
-	private SortedBazaarReply sortData(Timestamp timestamp, BazaarReply reply) {
+	private void storeData(Timestamp timestamp, BazaarReply reply) {
 
-		SortedBazaarReply sorted = new SortedBazaarReply();
-		sorted.setTimeStamp(timestamp);
+		System.out.println("Storing data from reply...");
 
 		try {
 			// Prepare a codematic representation of .TrackedItems
@@ -109,23 +107,79 @@ public class CmdNetwork {
 				names.put(internal_name, external_name);
 			}
 
+			System.out.println("Storing for internal/external item-name mappings: " + names);
+
 			// Process the relevant Products (place them into the SortedBizarreReply)
 			names.forEach((internal_name, external_name) -> {
-				sorted.processProduct(internal_name, external_name, reply.getProduct(external_name));
+				try {
+
+					if (!reply.getProducts().containsKey(external_name)) {
+						throw new NullPointerException("A null product cannot be operated on! " + internal_name + " " + external_name);
+					}
+
+					Product product = reply.getProduct(external_name);
+					Product.Status status = product.getQuickStatus();
+
+					createRequired();
+
+					String tableName = "Bizarre_Responses." + internal_name;
+
+					System.out.println("Using table name " + tableName + " for product quick-status " + status);
+
+					H2DatabaseAgent.instance().createStatement().execute(//
+							"CREATE TABLE IF NOT EXISTS " + tableName + " ("//
+									+ "timestamp timestamp, "//
+									+ "internal_name varchar(255), "//
+									+ "external_name varchar(255), " //
+									+ "buy_price double, "//
+									+ "buy_volume int, "//
+									+ "buy_orders int, "//
+									+ "buy_moving_week int, "//
+									+ "sell_price double, "//
+									+ "sell_volume int, "//
+									+ "sell_orders int, "//
+									+ "sell_moving_week int"//
+									+ ")");//
+
+					H2DatabaseAgent.instance().createStatement().execute(//
+							"INSERT INTO " + tableName + " VALUES ("//
+									+ "'" + timestamp + "', "//
+									+ "'" + internal_name + "', "//
+									+ "'" + external_name + "', "//
+									+ status.getBuyPrice() + ", "//
+									+ status.getBuyVolume() + ", "//
+									+ status.getBuyOrders() + ", "//
+									+ status.getBuyMovingWeek() + ", "//
+									+ status.getSellPrice() + ", "//
+									+ status.getSellVolume() + ", "//
+									+ status.getSellOrders() + ", "//
+									+ status.getSellMovingWeek()//
+									+ ")");//
+
+					System.out.println("Stored data for in/ex item-name " + internal_name + " " + external_name);
+
+				} catch (SQLException sql) {
+					sql.printStackTrace();
+					System.exit(-1);
+				} catch (NullPointerException n) {
+					n.printStackTrace();
+					System.exit(-1);
+				}
 			});
 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		return sorted;
 	}
 
-	private void storeData(SortedBazaarReply sortedBazaarReply) {
-		return;
-	}
+	public static void createRequired() {
+		try {
 
-	private void engageNetworks() {
-		return;
+			H2DatabaseAgent.instance().createStatement().execute("CREATE SCHEMA IF NOT EXISTS Bizarre_Responses");
+
+		} catch (SQLException sql) {
+			sql.printStackTrace();
+		}
 	}
 }

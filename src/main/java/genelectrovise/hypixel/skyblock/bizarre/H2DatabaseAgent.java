@@ -20,12 +20,12 @@ public class H2DatabaseAgent {
 
 		try {
 
-			System.out.println("Connecting to the Bizarre H2 in-memory SQL database!");
+			System.out.println("Connecting to the Bizarre H2 in-memory SQL database! " + pathInUrlStyle);
 
 			// Get a connection to the server with no login
 			this.connection = DriverManager.getConnection(pathInUrlStyle.toString());
 
-			connection.createStatement().execute("CREATE USER IF NOT EXISTS bizarre_console_login password 'extremely_secure_login_password' admin");
+			connection.createStatement().execute("CREATE USER IF NOT EXISTS bizarre_console_login PASSWORD 'extremely_secure_login_password' admin");
 
 		} catch (SQLException sql) {
 			sql.printStackTrace();
@@ -34,7 +34,8 @@ public class H2DatabaseAgent {
 	}
 
 	public static String getDefaultPath() {
-		return "jdbc:h2:" + Bizarre.FILE_SYSTEM_AGENT.roamingDirectory().getAbsolutePath() + "\\database\\sql\\h2";
+		//return "jdbc:h2:" + Bizarre.FILE_SYSTEM_AGENT.roamingDirectory().getAbsolutePath() + "\\database\\sql\\h2";
+		return "jdbc:h2:file:" + Bizarre.FILE_SYSTEM_AGENT.roamingDirectory().getAbsolutePath() + "\\database\\sql\\h2";
 	}
 
 	public static synchronized Connection instance() {

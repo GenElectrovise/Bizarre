@@ -101,7 +101,7 @@ public class CmdTracking implements Runnable {
 		try {
 
 			H2DatabaseAgent.instance().createStatement().execute("CREATE SCHEMA IF NOT EXISTS Bizarre");
-			H2DatabaseAgent.instance().createStatement().execute("CREATE TABLE IF NOT EXISTS Bizarre.TrackedItems(external_name varchar(255), internal_name varchar(255))");
+			H2DatabaseAgent.instance().createStatement().execute("CREATE TABLE IF NOT EXISTS Bizarre.TrackedItems(internal_name varchar(255), external_name varchar(255))");
 
 		} catch (SQLException sql) {
 			sql.printStackTrace();
