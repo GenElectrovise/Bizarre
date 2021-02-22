@@ -81,9 +81,11 @@ public class CmdNetwork {
 		BazaarReply reply = futureReply.get();
 
 		System.out.println("Recieved a BazaarReply! Processing data...");
-
+		
 		storeData(timestamp, reply);
+		System.out.println("Done storing!");
 
+		System.out.println("Starting NNET training!");
 		Bizarre.NEUROPH_MANAGER.trainNeuralNetworks_forTrackedItems_withAllAvailableData(threads);
 	}
 

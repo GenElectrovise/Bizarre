@@ -1,5 +1,6 @@
 package genelectrovise.hypixel.skyblock.bizarre.neuroph;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -7,15 +8,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import org.neuroph.core.NeuralNetwork;
+import org.neuroph.core.data.DataSet;
+import org.neuroph.nnet.Perceptron;
 
 import com.google.common.collect.HashBiMap;
+import com.google.common.net.PercentEscaper;
 
+import genelectrovise.hypixel.skyblock.bizarre.Bizarre;
 import genelectrovise.hypixel.skyblock.bizarre.H2DatabaseAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.FileSystemAgent;
+import genelectrovise.hypixel.skyblock.bizarre.data.ItemResponse;
 
 public class NeurophManager {
 
-	private static final int[] NETWORK_TRAINING_INTERVALS = { 5, 30, 60, 1440, 10080 };
+	private static final int SAMPLE_SIZE = 20;
+	private static final int DATA_POINTS_PER_RESPONSE = 9;
+
+	// i.e. 9 * 20 + 1 (big 8 & time * sample size + plus the time to predict at)
+	private static final int INPUT_NEURONS = DATA_POINTS_PER_RESPONSE * SAMPLE_SIZE + 1;
+	private static final int OUTPUT_NEURONS = 8;
 
 	/**
 	 * Manages the training of a all NNETs
@@ -23,6 +36,8 @@ public class NeurophManager {
 	 * @param threads
 	 */
 	public void trainNeuralNetworks_forTrackedItems_withAllAvailableData(int threads) {
+		
+		System.out.println("RETRAINING ALL NNETs!");
 
 		ExecutorService service = Executors.newFixedThreadPool(threads);
 
@@ -45,6 +60,8 @@ public class NeurophManager {
 			System.err.println("Unable to train neural networks. Failed to load Bizarre.TrackedItems");
 			throw new IllegalStateException(sql);
 		}
+		
+		System.out.println("Found TrackedItems " + trackedItems);
 
 		// Process each tracked item in a new thread
 		trackedItems.forEach((internal_name, external_name) -> {
@@ -61,70 +78,116 @@ public class NeurophManager {
 	 */
 	private void processItem_threadSafe(String internal_name, String external_name) {
 
-		// Create a list of timestamps for the data entries for the item
-		List<Timestamp> timestamps = new ArrayList<Timestamp>();
 		try {
-			ResultSet allTimestampsRAW = H2DatabaseAgent.instance().createStatement().executeQuery("SELECT timestamp FROM Bizarre_Responses." + internal_name);
-			while (allTimestampsRAW.next()) {
-				timestamps.add(allTimestampsRAW.getTimestamp(1));
+			// X Y Z A
+			ResultSet allTimestamps = H2DatabaseAgent.instance().createStatement().executeQuery("SELECT timestamp FROM Bizarre_Responses." + internal_name);
+			int count = H2DatabaseAgent.instance().createStatement().executeQuery("SELECT COUNT(1) FROM Bizarre_Responses." + internal_name).getInt("rowcount");
+			System.out.println("Bizarre_Responses." + internal_name + " contains " + count + " entries");
+
+			// 4 - 2 = 2
+			int startIndex = count - SAMPLE_SIZE;
+			int currentIndex;
+
+			// currentIndex < startIndex (pointer position)
+			// 0 < 2 (pointer 1 -> 2 of 4)
+			// 1 < 2 (pointer 2 -> 3 of 4)
+			// 2 = 2 (pointer @ 3 of 4, BREAK)
+			for (currentIndex = 0; currentIndex < startIndex; currentIndex++) {
+				allTimestamps.next();
 			}
+
+			List<ItemResponse> responses = new ArrayList<ItemResponse>();
+			while (allTimestamps.next()) {
+				double buyPrice = allTimestamps.getDouble("buy_price");
+				double buyVolume = allTimestamps.getDouble("buy_volume");
+				double buyOrders = allTimestamps.getDouble("buy_orders");
+				double buyMovingWeek = allTimestamps.getDouble("buy_moving_week");
+				double sellPrice = allTimestamps.getDouble("sell_price");
+				double sellVolume = allTimestamps.getDouble("sell_volume");
+				double sellOrders = allTimestamps.getDouble("sell_orders");
+				double sellMovingWeek = allTimestamps.getDouble("sell_moving_week");
+				double timestamp = Double.longBitsToDouble(allTimestamps.getTimestamp("timestamp").getTime());
+
+				ItemResponse response = new ItemResponse(internal_name, external_name, buyPrice, buyVolume, buyOrders, buyMovingWeek, sellPrice, sellVolume, sellOrders, sellMovingWeek, timestamp);
+				responses.add(response);
+				System.out.println("Found response for " + internal_name + " " + response);
+			}
+
+			List<Double> networkTrainingInputsList = new ArrayList<Double>();
+			List<Double> networkTrainingOutputsList = new ArrayList<Double>();
+			for (int i = 0; i < responses.size(); i++) {
+				ItemResponse response = responses.get(i);
+
+				// Not the final one!
+				if (i != responses.size() - 1) {
+					// Add all as inputs
+					networkTrainingInputsList.add(Double.valueOf(response.getBuyPrice()));
+					networkTrainingInputsList.add(Double.valueOf(response.getBuyVolume()));
+					networkTrainingInputsList.add(Double.valueOf(response.getBuyOrders()));
+					networkTrainingInputsList.add(Double.valueOf(response.getBuyMovingWeek()));
+					networkTrainingInputsList.add(Double.valueOf(response.getSellPrice()));
+					networkTrainingInputsList.add(Double.valueOf(response.getSellVolume()));
+					networkTrainingInputsList.add(Double.valueOf(response.getSellOrders()));
+					networkTrainingInputsList.add(Double.valueOf(response.getSellMovingWeek()));
+					networkTrainingInputsList.add(Double.valueOf(response.getTimestamp()));
+
+				}
+				// The final one!
+				else {
+					// Set outputs
+					networkTrainingOutputsList.add(Double.valueOf(response.getBuyPrice()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getBuyVolume()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getBuyOrders()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getBuyMovingWeek()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getSellPrice()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getSellVolume()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getSellOrders()));
+					networkTrainingOutputsList.add(Double.valueOf(response.getSellMovingWeek()));
+					// Add the time stamp as a final input
+					networkTrainingInputsList.add(Double.valueOf(response.getTimestamp()));
+				}
+				System.out.println(internal_name + " DataSet using Listed " + networkTrainingInputsList + " and " + networkTrainingOutputsList);
+
+				double[] networkTrainingInputsArray = new double[networkTrainingInputsList.size()];
+				double[] networkTrainingOutputsArray = new double[networkTrainingInputsList.size()];
+
+				for (int j = 0; j < networkTrainingInputsArray.length; j++) {
+					networkTrainingInputsArray[i] = networkTrainingInputsList.get(i);
+				}
+				for (int j = 0; j < networkTrainingOutputsArray.length; j++) {
+					networkTrainingOutputsArray[i] = networkTrainingOutputsList.get(i);
+				}
+				System.out.println(internal_name + " DataSet using Arrayed" + networkTrainingInputsArray + " and " + networkTrainingOutputsArray);
+
+				DataSet dataSet = new DataSet(networkTrainingInputsArray.length, networkTrainingOutputsArray.length);
+				dataSet.addRow(networkTrainingInputsArray, networkTrainingOutputsArray);
+				System.out.println(internal_name + " DataSet is " + dataSet);
+
+				trainNamedNetworkWithData(internal_name, external_name, dataSet);
+			}
+
 		} catch (SQLException sql) {
 			sql.printStackTrace();
 		}
 
-		// For each interval, find which stamps are within tolerance, and pass on the
-		// data.
-		for (int i = 0; i < NETWORK_TRAINING_INTERVALS.length; i++) {
+	}
 
-			Timestamp last = timestamps.get(0);
-			Timestamp idealFuture;
-			List<Timestamp> useStamps = new ArrayList<Timestamp>();
-			long idealTimeGap = TimeUnit.MINUTES.toMillis(NETWORK_TRAINING_INTERVALS[i]);
+	private void trainNamedNetworkWithData(String internal_name, String external_name, DataSet dataSet) {
+		@SuppressWarnings("rawtypes")
+		NeuralNetwork network;
 
-			// For each recorded stamp, find the next applicable one
-			for (Timestamp timestamp : timestamps) {
-
-				// Get the ideal future time
-				idealFuture = modifyTime(last, idealTimeGap, false);
-
-				// Generate the smallest and largest stamps that can be used
-				Timestamp smallest = modifyTime(idealFuture, new Double(idealTimeGap * 0.05).longValue(), true);
-				Timestamp largest = modifyTime(idealFuture, new Double(idealTimeGap * 0.05).longValue(), false);
-
-				// IF after smallest && before largest, use the stamp
-				// smallest < X < largest
-				if (timestamp.after(smallest) && timestamp.before(largest)) {
-					useStamps.add(timestamp);
-				}
-
-				// Shift the current time forward
-				last = idealFuture;
-			}
-
-			trainWithTimestamps(useStamps, NETWORK_TRAINING_INTERVALS[i], internal_name);
+		File networkFile = new File(Bizarre.FILE_SYSTEM_AGENT.roamingDirectory().getAbsolutePath() + "\\" + internal_name);
+		if (!networkFile.exists()) {
+			System.out.println("Unable to find network for item " + internal_name + "! Will now create one...");
+			network = new Perceptron(dataSet.getInputSize(), dataSet.getOutputSize());
+		} else {
+			network = Perceptron.createFromFile(networkFile);
 		}
-	}
 
-	/**
-	 * Trains a network using data with the given time stamps.
-	 * 
-	 * @param useStamps
-	 * @param i
-	 * @param internal_name
-	 */
-	private void trainWithTimestamps(List<Timestamp> useStamps, int i, String internal_name) {
-		// Create the name of the file holding the network
-		// >> If the file doesn't exist, create one with a standard network
-		// Load the network from the file.
+		System.out.println("NNET for " + internal_name + " is learning!");
+		network.learn(dataSet);
 
-		// FOR EACH COMBINATION OF 10 CONSECUTIVE STAMPS
-		// >> SELECT * FROM Bizarre_Responses.internal_name
-		// >> load columns 2-10 (I think...? The ones with numerical data in!!)
-		// >> Clamp the values between 0 and 1M (or other functional values)
-		// >> Train the network. (new DataSet)
-	}
-
-	private Timestamp modifyTime(Timestamp oldStamp, long millis, boolean trueSubtractElseAdd) {
-		return new Timestamp(oldStamp.getTime() + (trueSubtractElseAdd ? -1 * millis : millis));
+		System.out.println("Saved NNET " + internal_name + " to file " + networkFile.getAbsolutePath());
+		network.save(networkFile.getAbsolutePath());
 	}
 }
